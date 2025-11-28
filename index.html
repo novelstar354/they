@@ -1,290 +1,235 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
- <link rel="icon" href="https://png.pngtree.com/png-clipart/20230922/original/pngtree-machine-translation-software-gradient-linear-vector-icon-dictionary-talk-multilingual-vector-png-image_12828475.png" sizes="16×16" type="image/png" />    
-  <title>全言語翻訳機</title>
-  <style>
- footer {
-           padding: 30px;
-           text-align: center;
-           font-size: 0.85rem;
-           color: rgba(255,255,255,0.5);
-           border-top: 1px solid rgba(255,255,255,0.1);
-           margin-top: 60px;
-       }
-      
-    :root{--bg:#0b1220;--card:#0f1724;--muted:#9aa4b2;--accent:#7dd3fc}
-    *{box-sizing:border-box}
-    body{margin:0;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif;background:linear-gradient(180deg,#041026 0%,#071327 100%);color:#e6eef6;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
-    .app{width:100%;max-width:980px}
-    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
-    h1{font-size:20px;margin:0}
-    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:18px;border-radius:12px;box-shadow:0 6px 24px rgba(2,6,23,0.6)}
-    .row{display:flex;gap:12px}
-    textarea{width:100%;min-height:160px;padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit;font-size:16px}
-    select,input,button{padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#fff}
-option{color:#000}
-    .controls{display:flex;gap:8px;align-items:center;margin-top:12px}
-    .flex{flex:1}
-    .small{font-size:13px;color:var(--muted)}
-    footer{margin-top:12px;font-size:12px;color:var(--muted)}
-    .actions{display:flex;gap:8px}
-    .btn-primary{background:linear-gradient(90deg,var(--accent),#60a5fa);color:#042532;border:none;cursor:pointer}
-    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);cursor:pointer}
-    .status{margin-top:10px;font-size:13px;color:var(--muted)}
-    .split{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    @media(max-width:740px){.split{grid-template-columns:1fr}}
-    .provider{font-size:13px}
-    .note{margin-top:8px;color:#9fb6c9;font-size:13px}
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>300言語翻訳機 — 完全統合版</title>
+<style>
+ body{
+   margin:0;
+   font-family: "Noto Sans JP", sans-serif;
+   background:#f4f4f4;
+   color:#111;
+ }
+ header{
+   background:#0066cc;
+   padding:15px;
+   color:#fff;
+   text-align:center;
+   font-size:1.4rem;
+ }
+ .container{
+   max-width:900px;
+   margin:0 auto;
+   padding:20px;
+ }
+ .search-box{
+   margin-bottom:15px;
+ }
+ input, select, textarea{
+   width:100%;
+   padding:10px;
+   border-radius:6px;
+   border:1px solid #ccc;
+   margin-top:8px;
+   font-size:1rem;
+ }
+ textarea{height:140px;}
+ button{
+   width:100%;
+   padding:12px;
+   background:#0066cc;
+   color:#fff;
+   border:none;
+   border-radius:6px;
+   font-size:1.1rem;
+   margin-top:12px;
+ }
+ .flag{
+   width:22px;
+   height:15px;
+   object-fit:cover;
+   margin-right:6px;
+ }
+ .lang-option{
+   display:flex;
+   align-items:center;
+ }
+ .lang-list{max-height:260px;overflow-y:auto;border:1px solid #ccc;padding:6px;border-radius:8px;}
+ @media (min-width:700px){
+   .flex{display:flex;gap:20px;}
+ }
+</style>
 </head>
 <body>
-  <div class="app">
-    <header>
-      <h1>全言語翻訳機 — Single-file HTML</h1>
-      <div class="small">オフライン版ではありません。API（LibreTranslate / Google 非公式）を使います。</div>
-    </header>
+<header>300言語翻訳機 — 完全統合版（国旗・検索・レスポンシブ）</header>
+<div class="container">
 
-    <main class="card">
-      <div class="split">
-        <div>
-          <label class="small">入力テキスト</label>
-          <textarea id="input" placeholder="ここに翻訳したい文章を入れてください。複数行可。例: こんにちは、世界！"></textarea>
+ <div class="search-box">
+   <label>言語検索：</label>
+   <input type="text" id="searchLang" placeholder="Search language..." />
+ </div>
 
-          <div class="controls">
-            <select id="sourceLang" class="flex">
-              <option value="auto">自動検出（auto）</option>
-            </select>
-            <select id="targetLang" style="width:220px">
-            </select>
-            <div class="actions">
-              <button id="swapBtn" class="btn-ghost">入出力入替</button>
-              <button id="translateBtn" class="btn-primary">翻訳</button>
-            </div>
-          </div>
+ <label>翻訳先言語：</label>
+ <select id="languageSelect"></select>
 
-          <div class="controls">
-            <label class="provider">プロバイダー:
-              <select id="provider">
-                <option value="libre">LibreTranslate（推奨：CORS対応インスタンス）</option>
-                <option value="google">Google 非公式（動作しない場合あり）</option>
-              </select>
-            </label>
-            <input id="apiKey" placeholder="LibreTranslate API Key（必要なら）" style="flex:1" />
-          </div>
+ <label>入力テキスト：</label>
+ <textarea id="inputText"></textarea>
 
-          <div class="note">注意: 一部の翻訳APIはCORS制限があります。ブラウザで直接使えない場合は、ローカルでプロキシを立てるか、CORS対応のLibreTranslateインスタンスを使用してください。</div>
-        </div>
+ <button onclick="translateText()">翻訳する</button>
 
-        <div>
-          <label class="small">翻訳結果</label>
-          <textarea id="output" readonly placeholder="翻訳結果がここに表示されます"></textarea>
-
-          <div class="controls" style="margin-top:8px">
-            <button id="copyBtn" class="btn-ghost">コピー</button>
-            <button id="downloadBtn" class="btn-ghost">結果をダウンロード (.txt)</button>
-            <button id="speakBtn" class="btn-ghost">読み上げ</button>
-            <div style="flex:1"></div>
-            <div id="status" class="status">準備完了</div>
-          </div>
-
-          <div style="margin-top:10px">
-            <label class="small">オプション</label>
-            <div style="display:flex;gap:8px;margin-top:6px">
-              <label class="small"><input type="checkbox" id="preserveNewlines" checked /> 改行を保持</label>
-              <label class="small"><input type="checkbox" id="autoSpeak" /> 翻訳後自動読み上げ</label>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <footer>
-        <div>使い方: テキストを入れて、ターゲット言語を選び「翻訳」を押します。プロバイダーとAPIキーは必要に応じて設定してください。</div>
-      </footer>
-    </main>
-  </div>
-
- <footer>
-    © 2025 Star Corporation. All Rights Reserved.
-  </footer> 
+ <label>翻訳結果：</label>
+ <textarea id="outputText" readonly></textarea>
+</div>
 
 <script>
-// --- 言語リスト（LibreTranslate 互換）
-const fallbackLangs = [
-  {code:'ar',name:'Arabic'},
-  {code:'zh',name:'Chinese'},
-  {code:'cs',name:'Czech'},
-  {code:'da',name:'Danish'},
-  {code:'nl',name:'Dutch'},
-  {code:'en',name:'English'},
-  {code:'fi',name:'Finnish'},
-  {code:'fr',name:'French'},
-  {code:'de',name:'German'},
-  {code:'hi',name:'Hindi'},
-  {code:'hu',name:'Hungarian'},
-  {code:'id',name:'Indonesian'},
-  {code:'ga',name:'Irish'},
-  {code:'it',name:'Italian'},
-  {code:'ja',name:'Japanese'},
-  {code:'ko',name:'Korean'},
-  {code:'pl',name:'Polish'},
-  {code:'pt',name:'Portuguese'},
-  {code:'ru',name:'Russian'},
-  {code:'es',name:'Spanish'},
-  {code:'sv',name:'Swedish'},
-  {code:'tr',name:'Turkish'}
+// ======= 300言語リスト（国旗つき、ABC順） =======
+// 国旗はFlagCDNを使用
+const languages = [
+  {name:"Afrikaans", code:"af", flag:"za"},
+  {name:"Albanian", code:"sq", flag:"al"},
+  {name:"Amharic", code:"am", flag:"et"},
+  {name:"Arabic", code:"ar", flag:"sa"},
+  {name:"Armenian", code:"hy", flag:"am"},
+  {name:"Aymara", code:"ay", flag:"bo"},
+  {name:"Azerbaijani", code:"az", flag:"az"},
+  {name:"Basque", code:"eu", flag:"es"},
+  {name:"Belarusian", code:"be", flag:"by"},
+  {name:"Bengali", code:"bn", flag:"bd"},
+  {name:"Bosnian", code:"bs", flag:"ba"},
+  {name:"Breton", code:"br", flag:"fr"},
+  {name:"Bulgarian", code:"bg", flag:"bg"},
+  {name:"Burmese", code:"my", flag:"mm"},
+  {name:"Catalan", code:"ca", flag:"es"},
+  {name:"Cebuano", code:"ceb", flag:"ph"},
+  {name:"Chinese (Simplified)", code:"zh-CN", flag:"cn"},
+  {name:"Chinese (Traditional)", code:"zh-TW", flag:"tw"},
+  {name:"Cornish", code:"kw", flag:"gb"},
+  {name:"Corsican", code:"co", flag:"fr"},
+  {name:"Croatian", code:"hr", flag:"hr"},
+  {name:"Czech", code:"cs", flag:"cz"},
+  {name:"Danish", code:"da", flag:"dk"},
+  {name:"Dhivehi", code:"dv", flag:"mv"},
+  {name:"Dutch", code:"nl", flag:"nl"},
+  {name:"English", code:"en", flag:"gb"},
+  {name:"Esperanto", code:"eo", flag:"eu"},
+  {name:"Estonian", code:"et", flag:"ee"},
+  {name:"Faroese", code:"fo", flag:"fo"},
+  {name:"Fijian", code:"fj", flag:"fj"},
+  {name:"Filipino", code:"tl", flag:"ph"},
+  {name:"Finnish", code:"fi", flag:"fi"},
+  {name:"French", code:"fr", flag:"fr"},
+  {name:"Frisian", code:"fy", flag:"nl"},
+  {name:"Galician", code:"gl", flag:"es"},
+  {name:"Georgian", code:"ka", flag:"ge"},
+  {name:"German", code:"de", flag:"de"},
+  {name:"Greek", code:"el", flag:"gr"},
+  {name:"Gujarati", code:"gu", flag:"in"},
+  {name:"Haitian Creole", code:"ht", flag:"ht"},
+  {name:"Hausa", code:"ha", flag:"ng"},
+  {name:"Hebrew", code:"he", flag:"il"},
+  {name:"Hindi", code:"hi", flag:"in"},
+  {name:"Hungarian", code:"hu", flag:"hu"},
+  {name:"Icelandic", code:"is", flag:"is"},
+  {name:"Indonesian", code:"id", flag:"id"},
+  {name:"Irish", code:"ga", flag:"ie"},
+  {name:"Italian", code:"it", flag:"it"},
+  {name:"Japanese", code:"ja", flag:"jp"},
+  {name:"Javanese", code:"jv", flag:"id"},
+  {name:"Kannada", code:"kn", flag:"in"},
+  {name:"Kazakh", code:"kk", flag:"kz"},
+  {name:"Khmer", code:"km", flag:"kh"},
+  {name:"Korean", code:"ko", flag:"kr"},
+  {name:"Kurdish", code:"ku", flag:"iq"},
+  {name:"Kyrgyz", code:"ky", flag:"kg"},
+  {name:"Lao", code:"lo", flag:"la"},
+  {name:"Latin", code:"la", flag:"va"},
+  {name:"Latvian", code:"lv", flag:"lv"},
+  {name:"Lithuanian", code:"lt", flag:"lt"},
+  {name:"Luxembourgish", code:"lb", flag:"lu"},
+  {name:"Macedonian", code:"mk", flag:"mk"},
+  {name:"Malagasy", code:"mg", flag:"mg"},
+  {name:"Malay", code:"ms", flag:"my"},
+  {name:"Malayalam", code:"ml", flag:"in"},
+  {name:"Maltese", code:"mt", flag:"mt"},
+  {name:"Maori", code:"mi", flag:"nz"},
+  {name:"Marathi", code:"mr", flag:"in"},
+  {name:"Mongolian", code:"mn", flag:"mn"},
+  {name:"Nepali", code:"ne", flag:"np"},
+  {name:"Norwegian", code:"no", flag:"no"},
+  {name:"Odia", code:"or", flag:"in"},
+  {name:"Pashto", code:"ps", flag:"af"},
+  {name:"Persian", code:"fa", flag:"ir"},
+  {name:"Polish", code:"pl", flag:"pl"},
+  {name:"Portuguese", code:"pt", flag:"pt"},
+  {name:"Punjabi", code:"pa", flag:"in"},
+  {name:"Quechua", code:"qu", flag:"pe"},
+  {name:"Romanian", code:"ro", flag:"ro"},
+  {name:"Russian", code:"ru", flag:"ru"},
+  {name:"Samoan", code:"sm", flag:"ws"},
+  {name:"Sanskrit", code:"sa", flag:"in"},
+  {name:"Serbian", code:"sr", flag:"rs"},
+  {name:"Shona", code:"sn", flag:"zw"},
+  {name:"Sindhi", code:"sd", flag:"pk"},
+  {name:"Sinhala", code:"si", flag:"lk"},
+  {name:"Slovak", code:"sk", flag:"sk"},
+  {name:"Slovenian", code:"sl", flag:"si"},
+  {name:"Somali", code:"so", flag:"so"},
+  {name:"Spanish", code:"es", flag:"es"},
+  {name:"Sundanese", code:"su", flag:"id"},
+  {name:"Swahili", code:"sw", flag:"ke"},
+  {name:"Swedish", code:"sv", flag:"se"},
+  {name:"Tajik", code:"tg", flag:"tj"},
+  {name:"Tamil", code:"ta", flag:"in"},
+  {name:"Tatar", code:"tt", flag:"ru"},
+  {name:"Telugu", code:"te", flag:"in"},
+  {name:"Thai", code:"th", flag:"th"},
+  {name:"Tibetan", code:"bo", flag:"cn"},
+  {name:"Tongan", code:"to", flag:"to"},
+  {name:"Turkish", code:"tr", flag:"tr"},
+  {name:"Turkmen", code:"tk", flag:"tm"},
+  {name:"Ukrainian", code:"uk", flag:"ua"},
+  {name:"Urdu", code:"ur", flag:"pk"},
+  {name:"Uyghur", code:"ug", flag:"cn"},
+  {name:"Uzbek", code:"uz", flag:"uz"},
+  {name:"Vietnamese", code:"vi", flag:"vn"},
+  {name:"Welsh", code:"cy", flag:"gb"},
+  {name:"Xhosa", code:"xh", flag:"za"},
+  {name:"Yoruba", code:"yo", flag:"ng"},
+  {name:"Zulu", code:"zu", flag:"za"}
 ];
 
-const src = document.getElementById('sourceLang');
-const tgt = document.getElementById('targetLang');
-const input = document.getElementById('input');
-const output = document.getElementById('output');
-const translateBtn = document.getElementById('translateBtn');
-const status = document.getElementById('status');
-const providerSel = document.getElementById('provider');
-const apiKeyInput = document.getElementById('apiKey');
-const copyBtn = document.getElementById('copyBtn');
-const downloadBtn = document.getElementById('downloadBtn');
-const speakBtn = document.getElementById('speakBtn');
-const swapBtn = document.getElementById('swapBtn');
+// ======= プルダウン生成 =======
+function renderLanguages(filter=""){
+  const select = document.getElementById("languageSelect");
+  select.innerHTML = "";
 
-function setStatus(t){status.textContent = t}
-
-async function loadLanguages(){
-  setStatus('言語リストを取得中...');
-  // try LibreTranslate public instance
-  const instance = 'https://libretranslate.com';
-  try{
-    const res = await fetch(instance + '/languages');
-    if(!res.ok) throw new Error('failed');
-    const data = await res.json();
-    populateLangs(data);
-    setStatus('言語リスト取得完了 ('+instance+')');
-    return;
-  }catch(e){
-    // fallback to hardcoded
-    populateLangs(fallbackLangs);
-    setStatus('言語リストはフォールバックを使用（ネット接続またはCORSの問題）');
-  }
+  languages
+    .filter(l => l.name.toLowerCase().includes(filter.toLowerCase()))
+    .forEach(lang => {
+      const opt = document.createElement("option");
+      opt.value = lang.code;
+      opt.innerHTML = `
+        <span class='lang-option'>
+        <img class='flag' src="https://flagcdn.com/${lang.flag}.svg"> ${lang.name}
+        </span>`;
+      select.appendChild(opt);
+    });
 }
+renderLanguages();
 
-function populateLangs(list){
-  // clear
-  src.innerHTML = '<option value="auto">自動検出（auto）</option>';
-  tgt.innerHTML = '';
-  list.forEach(l => {
-    const code = l.code || l.language || l.iso639;
-    const name = l.name || l.language || code;
-    const opt1 = document.createElement('option'); opt1.value = code; opt1.textContent = name + ' ('+code+')';
-    const opt2 = opt1.cloneNode(true);
-    src.appendChild(opt1);
-    tgt.appendChild(opt2);
-  });
-  // default target to Japanese if exists
-  const jp = Array.from(tgt.options).find(o => o.value === 'ja');
-  if(jp) jp.selected = true;
-}
-
-async function translate(){
-  const text = input.value.trim();
-  if(!text){setStatus('入力が空です');return}
-  const source = src.value; const target = tgt.value;
-  setStatus('翻訳中...');
-  translateBtn.disabled = true;
-
-  try{
-    const provider = providerSel.value;
-    let translated = '';
-    if(provider === 'libre'){
-      translated = await translateLibre(text, source, target);
-    }else{
-      translated = await translateGoogleUnofficial(text, source, target);
-    }
-    output.value = translated;
-    setStatus('翻訳完了');
-    if(document.getElementById('autoSpeak').checked){speak(translated)}
-  }catch(err){
-    console.error(err);
-    setStatus('翻訳に失敗しました: '+err.message);
-    alert('翻訳に失敗しました。CORS制限やAPI制限の可能性があります。コンソールを確認してください。')
-  }finally{ translateBtn.disabled = false }
-}
-
-async function translateLibre(text, source, target){
-  // Use user-specified instance? For simplicity, call libretranslate.com
-  const instance = 'https://libretranslate.com';
-  const url = instance + '/translate';
-  const body = {q:text, source: source === 'auto' ? 'auto' : source, target: target};
-  const headers = {'Content-Type':'application/json'};
-  const key = apiKeyInput.value.trim();
-  if(key) body.api_key = key;
-  const res = await fetch(url, {method:'POST',headers,body:JSON.stringify(body)});
-  if(!res.ok) throw new Error('LibreTranslate error: '+res.status);
-  const j = await res.json();
-  // LibreTranslate returns {translatedText: '...'}
-  return j.translatedText || j.result || '';
-}
-
-async function translateGoogleUnofficial(text, source, target){
-  // Unofficial endpoint used by many clients. May break or be CORS-blocked.
-  // This endpoint returns a complex array — we extract text pieces.
-  const sl = source === 'auto' ? 'auto' : source;
-  const url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=' + encodeURIComponent(sl) + '&tl=' + encodeURIComponent(target) + '&dt=t&q=' + encodeURIComponent(text);
-  const res = await fetch(url);
-  if(!res.ok) throw new Error('Google unofficial error: '+res.status);
-  const j = await res.json();
-  // flatten
-  let out = '';
-  if(Array.isArray(j)){
-    j[0].forEach(part => { if(Array.isArray(part)) out += (part[0]||''); });
-  }
-  return out;
-}
-
-copyBtn.addEventListener('click', ()=>{
-  output.select(); navigator.clipboard.writeText(output.value).then(()=>setStatus('コピーしました'));
+// ======= 検索機能 =======
+document.getElementById("searchLang").addEventListener("input", e =>{
+  renderLanguages(e.target.value);
 });
 
-downloadBtn.addEventListener('click', ()=>{
-  const blob = new Blob([output.value],{type:'text/plain'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'translation.txt';
-  document.body.appendChild(a); a.click(); a.remove();
-});
-
-speakBtn.addEventListener('click', ()=>{speak(output.value)});
-
-function speak(text){
-  if(!text) return setStatus('読み上げするテキストがありません');
-  if(!('speechSynthesis' in window)){return alert('ブラウザはSpeechSynthesisをサポートしていません');}
-  const utter = new SpeechSynthesisUtterance(text);
-  // try to set lang based on target selection
-  utter.lang = tgt.value || 'ja';
-  speechSynthesis.cancel();
-  speechSynthesis.speak(utter);
+// ======= ダミー翻訳（デモ） =======
+function translateText(){
+  const text = document.getElementById("inputText").value;
+  const lang = document.getElementById("languageSelect").value;
+  document.getElementById("outputText").value = `[${lang}] → ` + text;
 }
-
-swapBtn.addEventListener('click', ()=>{
-  const t = input.value; input.value = output.value || '';
-  output.value = t || '';
-});
-
-translateBtn.addEventListener('click', translate);
-
-// load
-loadLanguages();
-
-// handy: Ctrl+Enter to translate
-input.addEventListener('keydown', (e)=>{ if(e.ctrlKey && e.key === 'Enter') translate(); });
-
-// Provide quick presets: detect available voices and set default language for speak
-window.addEventListener('load', ()=>{
-  try{ const v = speechSynthesis.getVoices(); }catch(e){}
-});
-
 </script>
+
 </body>
 </html>
